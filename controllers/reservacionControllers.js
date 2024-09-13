@@ -1,5 +1,51 @@
 const reservaciones = require("../models/reservacionesModel");
 
+// Obtener listado de reservaciones con opción de filtrar por nombre de hotel y otros parámetros
+const obtenerReservaciones = async (req, res) => {
+    const { hotel, num_huespedes, estado, tipo_habitacion, fecha_incio, fecha_fin } = req.query;
+   
+    let reservasFiltradas = reservaciones;
+   
+    if (hotel) {
+      reservasFiltradas = reservasFiltradas.filter(
+        (r) => r.nombre.toLowerCase() === hotel.toLowerCase()
+      );
+    }
+   
+    if (num_huespedes) {
+      reservasFiltradas = reservasFiltradas.filter(
+        (r) => r.num_huespedes === parseInt(num_huespedes)
+      );
+    }
+   
+    if (estado) {
+      reservasFiltradas = reservasFiltradas.filter(
+        (r) => r.estado.toLowerCase() === estado.toLowerCase()
+      );
+    }
+   
+    if (tipo_habitacion) {
+      reservasFiltradas = reservasFiltradas.filter(
+        (r) => r.tipo.toLowerCase() === tipo_habitacion.toLowerCase()
+      );
+    }
+   
+    if (fecha_incio && fecha_fin) {
+      reservasFiltradas = reservasFiltradas.filter(
+        (r) => r.fechaEntrada >= fecha_incio && r.fechaSalida <= fecha_fin
+      );
+    }
+   
+    if (reservasFiltradas.length === 0) {
+      return res.status(404).json({ error: "No se encontraron reservaciones con los criterios dados." });
+    }
+   
+    res.json({
+      msg: "Reservaciones obtenidas con éxito.",
+      data: reservasFiltradas,
+    });
+  };
+
 
 // Función para generar un ID alfanumérico aleatorio
 function generarIdAlfanumerico(longitud) {
@@ -16,7 +62,7 @@ function generarIdAlfanumerico(longitud) {
 const crearReservacion = async (req, res) => {
     const nuevaReservacion = req.body;
     nuevaReservacion.id = generarIdAlfanumerico(5);
-    reservaciones.push(nuevaReservacion);
+    reservaciones.unshift(nuevaReservacion);
 
     res.status(201).json({
         msg: 'Reservación creada con éxito.',
@@ -24,17 +70,6 @@ const crearReservacion = async (req, res) => {
     });
 };
 
-// Obtener listado de reservaciones
-const obtenerReservaciones = async (req, res) => {
- const reservacionesBusqueda = reservaciones.length > 0
-
-    if (!reservacionesBusqueda) {
-        return res.status(400).json({ error: "No hay reservaciones en este momento."})
-    } 
-    
-    res.json({ msg: 'Listado de Reservaciones', data: reservaciones })
-
-}
 
 // Obtener informacion sobre una Reservacion en especifico por ID
 const obtenerReservacionPorId = (req, res) => {
@@ -77,86 +112,12 @@ const eliminarReservacion = async (req, res) => {
     res.json({ msg: 'Reservacion eliminada con éxito.'})
 }
 
-
-// Obtener informacion sobre una Reservacion en especifico por Nombre de Hotel
-const obtenerReservacionesPorNombreHotel = (req, res) => {
-    const nombreHotel = req.query.nombre
-    const reservacion = reservaciones.filter((r) => r.nombre === nombreHotel);
-    console.log(nombreHotel)
-    console.log(req.query.nombre);
-    if (reservacion.length === 0) {
-      return res.status(404).json({ error: "No hay reservaciones en el Hotel Ingresado" });
-    }
-  
-    res.json({ mensaje: `Información de las Reservaciones en el hotel ${nombreHotel}:`, reservacion });
-};
-
-
-// Filtrado de reservas por numero de huespedes.
-const filtradoPorNumHuespedes = (req, res) => {
-    const numHuespedes = parseInt(req.params.num_huespedes);
-    console.log(numHuespedes);
-    const reservacionesFiltradas = reservaciones.filter((r) => r.num_huespedes === numHuespedes);
-
-    if (reservacionesFiltradas.length === 0) {
-        return res.status(404).json({ error: "No se encontraron reservaciones con ese número de huéspedes" });
-    }
-
-    res.json({ mensaje: `Reservaciones con ${numHuespedes} huéspedes`, reservaciones: reservacionesFiltradas });
-};
-
-// Filtrado de reservas por Estado (Disponible - Reservado)
-const obtenerReservacionesPorEstado = (req, res) => {
-    const estado = req.query.estado.toLowerCase()
-    const reservacion = reservaciones.filter((r) => r.estado.toLowerCase() === estado);
-  
-    if (reservacion.length === 0) {
-      return res.status(404).json({ error: `No hay reservaciones en Estado: ${estado}` });
-    }
-  
-    res.json({ mensaje: `Información de las Reservaciones en el hotel ${estado}:`, reservacion });
-};
-
-// Filtrado de reservaciones por Tipo de Habitacion
-const filtradoReservacionesPorTipoHabitacion = (req, res) => {
-    const tipoReservacion = req.query.tipo.toLowerCase();
-    const reservacion = reservaciones.filter((t) => t.tipo.toLowerCase() == tipoReservacion);
-
-    if (reservacion.length === 0) {
-        return res.status(400).json({ error: "Tipo de Habitacion no Disponible."})
-    }
-
-    res.json({ mensaje: `Listado de Reservaciones con habitacion tipo ${tipoReservacion}`, reservacion})
-}
-
-
-// Filtrado de reservaciones por Fecha Inicio/Fin
-const obtenerReservacionesPorRangoDeFechas = (req, res) => {
-    const { fechaInicio, fechaFin } = req.params
-
-    const reservacionesFiltradas = reservaciones.filter((f) => f.fechaEntrada && f.fechaSalida == fechaInicio && fechaFin);
-
-    if (reservacionesFiltradas.length = 0) {
-        return res.status(400).json({ error: `No hay reservaciones para el rango de fechas: ${fechaInicio} - ${fechaFin}`})
-    }
-
-    res.json({
-        mensaje: `Listado de Reservaciones en el rango de fechas: ${fechaInicio} - ${fechaFin}`,
-        reservaciones: reservacionesFiltradas
-    })
-}
-
 module.exports = {
     crearReservacion,
     obtenerReservaciones,
     obtenerReservacionPorId,
     actualizarReservacion,
     eliminarReservacion,
-    obtenerReservacionesPorNombreHotel,
-    filtradoPorNumHuespedes,
-    obtenerReservacionesPorEstado,
-    obtenerReservacionesPorRangoDeFechas,
-    filtradoReservacionesPorTipoHabitacion
 }
 
 
