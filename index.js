@@ -8,8 +8,8 @@ const express = require('express')
 const cors = require('cors')
 
 // Importacion modulo de Swagger.
-// const swaggerUI = require('swagger-ui-express')
-// const swaggerJsDoc = require('swagger-jsdoc')
+const swaggerUI = require('swagger-ui-express')
+const swaggerJsDoc = require('swagger-jsdoc')
 
 // Modulo para manejo de rutas.
 const path = require('path')
@@ -20,23 +20,23 @@ const port = process.env.PORT || 3005
 // Definimos el host en el cual estara nuestro proyecto.
 const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`
 
-// const swaggerOptions = {
-//     definition: {
-//         openapi: '3.0.0',
-//         info: {
-//             title: 'Node API for Order Management',
-//             version: '1.0.0',
-//         },
-//         servers: [
-//             {
-//                 url: serverUrl,
-//             },
-//         ],
-//     },
-//     apis: [`${path.join(__dirname, './routes/*.js')}`],
-// }
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Node API for Order Management',
+            version: '1.0.0',
+        },
+        servers: [
+            {
+                url: serverUrl,
+            },
+        ],
+    },
+    apis: [`${path.join(__dirname, './routes/reservaciones.js')}`],
+}
 
-// const swaggerDocs = swaggerJsDoc(swaggerOptions)
+const swaggerDocs = swaggerJsDoc(swaggerOptions)
 
 // Creacion de instancia de la aplicacion.
 const app = express();
@@ -58,7 +58,7 @@ app.get("/", (req, res) => {
 const reservacionesRoutes = require("./routes/reservaciones")
 // Usar las rutas de los recursos.
 app.use('/api/reservas', reservacionesRoutes)
-// app.use('/', swaggerUI.serve, swaggerUI.setup(swaggerDocs))
+app.use('/', swaggerUI.serve, swaggerUI.setup(swaggerDocs))
 
 // Iniciacion del servidor.
 app.listen(port, () => console.log(`Servidor corriendo en el servidor ${serverUrl}`));

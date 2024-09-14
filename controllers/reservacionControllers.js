@@ -1,6 +1,7 @@
 const reservaciones = require("../models/reservacionesModel");
 
-// Obtener listado de reservaciones con opción de filtrar por nombre de hotel y otros parámetros
+// Obtener listado de reservaciones con opción de filtrar Por:
+// Nombre de Hotel, Numero de Huespedes, Estado, Tipo de Habitacion, Fecha de Entrada y Fecha de Salida.
 const obtenerReservaciones = async (req, res) => {
     const { hotel, num_huespedes, estado, tipo_habitacion, fecha_incio, fecha_fin } = req.query;
    
@@ -37,7 +38,7 @@ const obtenerReservaciones = async (req, res) => {
     }
    
     if (reservasFiltradas.length === 0) {
-      return res.status(404).json({ error: "No se encontraron reservaciones con los criterios dados." });
+      return res.status(404).json({ error: "No se encontraron reservaciones con los datos ingresados." });
     }
    
     res.json({
@@ -45,7 +46,6 @@ const obtenerReservaciones = async (req, res) => {
       data: reservasFiltradas,
     });
   };
-
 
 // Función para generar un ID alfanumérico aleatorio
 function generarIdAlfanumerico(longitud) {
